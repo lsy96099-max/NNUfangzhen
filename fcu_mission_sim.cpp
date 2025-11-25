@@ -55,36 +55,39 @@ static std::vector<Pt> traj1, traj2, traj3;                 // 3架机NNU轨迹�
 static std::vector<Pt> gen_N(float height, float width, int samples) {
     std::vector<Pt> out;
 
-    // 左竖线（下→上）
+    // 1) 左竖线：左下 (0, -width/2) → 左上 (height, -width/2)
     for (int i = 0; i < samples; i++) {
         float t = (float)i / (samples - 1);
-        out.emplace_back(t * height, 0.0f, 0.0f);
+        out.emplace_back(t * height, -width * 0.5f, 0.0f);
     }
 
-    // 对角线（左下→右上）
+    // 2) 斜线：左上 (height, -width/2) → 右下 (0, +width/2)
     for (int i = 0; i < samples; i++) {
         float t = (float)i / (samples - 1);
-        out.emplace_back(t * height, t * width, 0.0f);
+        float x = height * (1 - t);      // height → 0
+        float y = -width * 0.5f + t * width;  // -width/2 → +width/2
+        out.emplace_back(x, y, 0.0f);
     }
 
-    // 右竖线（下→上）
+    // 3) 右竖线：右下 (0, +width/2) → 右上 (height, +width/2)
     for (int i = 0; i < samples; i++) {
         float t = (float)i / (samples - 1);
-        out.emplace_back(t * height, width, 0.0f);
+        out.emplace_back(t * height, +width * 0.5f, 0.0f);
     }
 
     return out;
 }
+
 
 // 生成垂直 U 字（左下角为起点，x:上下，y:左右）
 static std::vector<Pt> gen_U(float height, float width, int samples_side, int samples_bottom) {
     std::vector<Pt> out;
 
     // 左竖线（下→上）
-    for (int i = 0; i < samples_side; i++) {
-        float t = -(float)i / (samples_side - 1);
-        out.emplace_back(t * height, 0.0f, 0.0f);
-    }
+   for (int i = 0; i < samples_side; i++) {
+    float t = -(float)(samples_side-1-i) / (samples_side - 1);
+    out.emplace_back(t * height, 0.0f, 0.0f);
+}
 
     // 底部半圆（左→右）
     for (int i = 0; i < samples_bottom; i++) {
@@ -221,7 +224,54 @@ static void publish_sim_data(const ros::Time& now) {
         pose_stamped.header = odom.header;
         pose_stamped.pose = odom.pose.pose;
         path.header = odom.header;
-        path.poses.push_back(pose_stamped);
+        path.poses.push_
+
+// -------------------------- 主函数 --------------------------
+int main(int argc, char **argv) {
+    ros::init(argc, argv, "fcu_mission_sim");
+    ros::NodeHandle nh("~");
+    ros::Rate loop_rate(100);  // 100Hz发布频率
+
+    // -------------------------- 初始化发布者 --------------------------
+    // 模拟里程计发布
+    pub_odom_001 = nh.advertise<nav_msgs::Odometry>("odom_global_001", 10);
+    pub_odom_002 = nh.advertise<nav_msgs::Odometry>("odom_global_002", 10);
+    pub_odom_003 = nh.advertise<nav_msgs::Odometry>("odom_global_003", 10);
+    // 实际轨迹Path发布
+    pub_path_global_001 = nh.advertise<nav_msgs::Path>("path_global_001", 10);
+    pub_path_global_002 = nh.advertise<nav_msgs::Path>("path_global_002", 10);
+    pub_path_global_003 = nh.advertise<nav_msgs::Path>("path_global_003", 10);
+    // 目标轨迹Path发布
+    pub_path_target_001 = nh.advertise<nav_msgs::Path>("path_target_001", 10);
+    pub_path_target_002 = nh.advertise<nav_msgs::Path>("path_target_002", 10);
+    pub_path_target_003 = nh.advertise<nav_msgs::Path>("path_target_003", 10);
+    // Mission指令发布（兼容fcu_bridge）
+    pub_mission_001 = nh.advertise<std_msgs::Float32MultiArray>("mission_001", 10);
+    pub_mission_002 = nh.advertise<std_msgs::Float32MultiArray>("mission_002", 10);
+    pub_mission_003 = nh.advertise<std_msgs::Float32MultiArray>("mission_003", 10);
+
+    // -------------------------- 初始化NNU轨迹 --------------------------
+    init_trajectory();
+    ROS_INFO("NNU仿真启动！在RViz中订阅以下话题：");
+    ROS_INFO("  - 实际轨迹：path_global_001 (N)、path_global_002 (N)、path_global_003 (U)");
+    ROS_INFO("  - 目标轨迹：path_target_001、path_target_002、path_target_003");
+
+    // -------------------------- 仿真循环 --------------------------
+    while (ros::ok()) {
+        ros::Time now = ros::Time::now();
+        
+        // 1. 更新无人机仿真位置
+        update_uav_pos();
+        
+        // 2. 发布所有仿真数据（里程计、Path、Mission）
+        publish_sim_data(now);
+        
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
+
+    return 0;
+}back(pose_stamped);
         path_pub.publish(path);
 
         // 3. 发布Mission指令（目标点）
