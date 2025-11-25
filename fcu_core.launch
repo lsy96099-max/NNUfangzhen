@@ -1,0 +1,18 @@
+<launch>
+  <!-- 1. 启动NNU仿真节点（核心：生成轨迹和模拟数据） -->
+  <node name="fcu_mission_sim" pkg="fcu_core" type="fcu_mission_sim" output="screen">
+    <param name="sim_height" value="1.0" />  <!-- NNU仿真高度（1m） -->
+    <param name="sim_speed" value="0.02" />  <!-- 仿真移动速度（可调整快慢） -->
+  </node>
+
+  <!-- 2. 启动飞控桥接节点（可选：验证Mission指令转发，pkg已修正） -->
+  <node name="fcu_bridge_001" pkg="fcu_core" type="fcu_bridge_001" output="screen">
+    <param name="offboard" value="false" />
+    <param name="use_uwb" value="false" />
+    <param name="set_goal" value="false" />
+    <param name="channel" value="1" />  <!-- 网络模式，避免串口依赖 -->
+  </node>
+
+  <!-- 3. 启动RViz（加载预设配置，find路径已修正为fcu_core_v2） -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find fcu_core)/rviz_cfg/nnu_sim.rviz" output="screen"/>
+</launch>

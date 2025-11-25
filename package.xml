@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<package format="2">  <!-- 关键：明确指定格式版本为 2 -->
+
+  <name>fcu_core</name>
+  <version>0.0.0</version>
+  <description>This is an offboard project of aerial robot.</description>
+
+  <maintainer email="jackypan@fancinnov.com">JackyPan</maintainer>
+  <license>private</license>
+  <author email="jackypan@fancinnov.com">JackyPan</author>
+
+  <!-- 编译工具依赖 -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- 编译时依赖 (Build Dependencies) -->
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>rosbag</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf</depend>
+  <depend>image_transport</depend>
+  <depend>serial</depend>
+  <depend>quadrotor_msgs</depend>
+  <depend>yaml-cpp</depend> <!-- 关键：添加 yaml-cpp 依赖 -->
+
+  <!-- 执行时依赖 (Run Dependencies) -->
+  <!-- 在 format="2" 中，<depend> 标签同时涵盖了 build 和 run 依赖，
+       因此下面重复的 <run_depend> 可以全部删除，避免冗余和潜在错误。 -->
+
+  <export>
+  </export>
+
+</package>
