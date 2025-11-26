@@ -1,0 +1,67 @@
+、、正确的N U是反方向
+
+static std::vector<Pt> gen_N(float height, float width, int samples) {
+    std::vector<Pt> out;
+
+    // ① 右竖线（反向：上 → 下） 原本 0 → height，现在 height → 0
+    for (int i = 0; i < samples; i++) {
+        float t = (float)i / (samples - 1);
+        out.emplace_back(height * (1 - t), +width * 0.5f, 0.0f);
+    }
+
+    // ② 斜线（不变：左上 → 右下）
+    for (int i = 0; i < samples; i++) {
+        float t = (float)i / (samples - 1);
+        float x = height * (1 - t);                     // height → 0
+        float y = -width * 0.5f + t * width;            // -width/2 → +width/2
+        out.emplace_back(x, y, 0.0f);
+    }
+
+    // ③ 左竖线（反向：上 → 下） 原本 0 → height，现在 height → 0
+    for (int i = 0; i < samples; i++) {
+        float t = (float)i / (samples - 1);
+        out.emplace_back(height * (1 - t), -width * 0.5f, 0.0f);
+    }
+
+    return out;
+}
+
+
+// 生成垂直 U 字（左下角为起点，x:上下，y:左右）
+// 生成垂直 U 字（常规笔画：左上 -> 左下 -> 底部弧 -> 右上）
+// x: 上下方向 (0=底, height=顶)， y: 左右方向 (左=-width/2, 右=+width/2)
+static std::vector<Pt> gen_U(float height, float width, int samples_side, int samples_bottom) {
+    std::vector<Pt> out;
+
+    // 左竖线（下→上）
+   for (int i = 0; i < samples_side; i++) {
+    float t = -(float)(samples_side-1-i) / (samples_side - 1);
+    out.emplace_back(t * height, 0.0f, 0.0f);
+}
+
+    // 底部半圆（左→右）
+    for (int i = 0; i < samples_bottom; i++) {
+        float t = (float)i / (samples_bottom - 1);
+        float angle = M_PI * t; // 0 → π
+
+        float cx = 0.0f;        // 圆心 x 在底部起点
+        float cy = width * 0.5f; // 圆心 y 居中
+
+        float rx = width * 0.5f; // 半径 y 方向
+        float ry = height * 0.2f; // 半圆深度，控制圆弧的弯曲度
+
+        out.emplace_back(
+            ry * sinf(angle),       // x: 0 → 弧形向上
+            cy - rx * cosf(angle),  // y: 左→右
+            0.0f
+        );
+    }
+
+    // 右竖线（下→上）
+    for (int i = 0; i < samples_side; i++) {
+        float t = -(float)i / (samples_side - 1);
+        out.emplace_back(t * height, width, 0.0f);
+    }
+
+    return out;
+}
